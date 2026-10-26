@@ -89,27 +89,36 @@ go test ./...
 Также применен принцип DIP — принцип инверсии зависимостей:
 В internal/service/park.go ParkService зависит от интерфейсов ServiceCenter и repository.Storage, а не от конкретных реализаций. 
 
+```
 type ParkService struct {
 	repository    repository.Storage
 	serviceCenter ServiceCenter
 }
+```
 
 Благодаря чему можно подменять логику техосмотра и способ хранения данных, не изменяя при этом ParkService.
 
 Принцип разделения интерфейсов ISP также использован в коде. Вместо одного большого интерфейса используются маленькие:
+
+```
 type InventoryItem interface {
     Name() string
     InventoryNumber() string
 }
+```
 
+```
 type Transport interface {
     InventoryItem
     EaseOfUse() int
 }
+```
 
+```
 type EnergyConsumer interface {
     DailyEnergyConsumption() float64
 }
+```
 
 Благодаря этому типы реализуют только те контракты, которые им действительно нужны. Например, шлему не требуется реализовывать DailyEnergyConsumption(), поскольку он не потребляет энергию в рамках модели. А отчёт расхода энергии может работать с любым объектом, реализующим EnergyConsumer.
 
@@ -128,12 +137,15 @@ type EnergyConsumer interface {
 
 В internal/service/service_center.go объявлен интерфейс:
 
+```
 type ServiceCenter interface {
 	Accept(transport domain.Transport) bool
 }
-
+```
 
 ParkService принимает его через конструктор в internal/service/park.go:
+
+```
 func NewParkService(
 	repo repository.Storage,
 	serviceCenter ServiceCenter,
@@ -143,17 +155,23 @@ func NewParkService(
 		serviceCenter: serviceCenter,
 	}
 }
+```
 
 В тестах используется подмена зависимости - создается фейковый сервисный центр, реализующий необходимый интерфейс:
+
+```
 type fakeServiceCenter struct {
 	accepted bool
 	calls    int
 }
+```
 
+```
 func (f *fakeServiceCenter) Accept(transport domain.Transport) bool {
 	f.calls++
 	return f.accepted
 }
+```
 
 В тесте TestParkService_AddTransport сначала проверяется добавление транспорта после успешного техосмотра, поэтому 	center := &fakeServiceCenter{accepted: true} используется сервисный центр, который всегда возвращает true, затем проверяется, что не добавляются транспортные средства, которые не прошли техосмотр, поэтому используется 
 center := &fakeServiceCenter{accepted: false}, который отвергает весь транспорт. 
