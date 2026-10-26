@@ -1,0 +1,23 @@
+# Бинарники
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/myapp
+
+# Тестовые файлы
+*.test
+*.out
+
+# Зависимости
+/vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# ОС
+.DS_Store
+Thumbs.db
